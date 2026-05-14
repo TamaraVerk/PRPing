@@ -18,7 +18,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var triggerFile: URL!
     private var prs: [PR] = []
     private var blinkOn = false
-    private let ghPath = "/opt/homebrew/bin/gh"
     private let searchURL = "https://github.com/pulls?q=is%3Aopen+is%3Apr+review-requested%3A%40me"
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -82,9 +81,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             let task = Process()
-            task.launchPath = self.ghPath
+            task.launchPath = "/usr/bin/env"
             task.arguments = [
-                "search", "prs",
+                "gh", "search", "prs",
                 "--review-requested=@me",
                 "--state=open",
                 "--limit", "30",
