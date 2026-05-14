@@ -43,10 +43,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         rebuildMenu()
 
         watchTrigger()
-        refresh()
+        refresh(shouldBlink: false)
 
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
-            self?.refresh()
+            self?.refresh(shouldBlink: false)
         }
     }
 
@@ -59,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             queue: .main
         )
         source.setEventHandler { [weak self] in
-            self?.refresh()
+            self?.refresh(shouldBlink: true)
             // If file was renamed/deleted, re-arm
             if source.data.contains(.delete) || source.data.contains(.rename) {
                 self?.fileSource?.cancel()
@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         fileSource = source
     }
 
-    private func refresh() {
+    private func refresh(shouldBlink: Bool) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             let task = Process()
@@ -104,8 +104,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     self.rebuildMenu()
                     if parsed.isEmpty {
                         self.stopBlinking()
-                    } else {
+                    } else if shouldBlink {
                         self.startBlinking()
+                    } else {
+                        self.setIcon(blinkState: false)
                     }
                 }
             } catch {
@@ -203,7 +205,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         stopBlinking()
     }
 
-    @objc private func refreshNow() { refresh() }
+    @objc private func refreshNow() { refresh(shouldBlink: false) }
 
     func menuWillOpen(_ menu: NSMenu) {
         stopBlinking()

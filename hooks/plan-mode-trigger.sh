@@ -1,5 +1,6 @@
 #!/bin/bash
-# Claude Code hook — triggers PRPing menu bar app when permission_mode == "plan".
+# Claude Code hook — triggers PRPing menu bar app when permission_mode changes
+# to plan, acceptEdits, or bypassPermissions ("everything accept").
 # Reads hook payload from stdin (JSON) and touches the trigger file.
 
 payload="$(cat 2>/dev/null || true)"
@@ -13,10 +14,12 @@ except Exception:
 print(d.get("permission_mode", ""))
 ' 2>/dev/null)"
 
-if [ "$mode" = "plan" ]; then
-    trigger_dir="$HOME/.claude-pr-ping"
-    mkdir -p "$trigger_dir"
-    /usr/bin/touch "$trigger_dir/trigger"
-fi
+case "$mode" in
+    plan|acceptEdits|bypassPermissions)
+        trigger_dir="$HOME/.claude-pr-ping"
+        mkdir -p "$trigger_dir"
+        /usr/bin/touch "$trigger_dir/trigger"
+        ;;
+esac
 
 exit 0
